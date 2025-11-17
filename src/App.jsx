@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 
 /* ====================== Pagalbinės ====================== */
@@ -20,7 +19,13 @@ function useLS(key, init) {
   return [v, setV];
 }
 
-const defaultGoals = { steps: 8000, waterMl: 1500, screenLimitMin: 120, sleepHours: 8 };
+const defaultGoals = {
+  steps: 8000,
+  waterMl: 1500,
+  screenLimitMin: 120,
+  sleepHours: 8,
+};
+
 const newDay = () => ({
   date: todayStr(),
   steps: 0,
@@ -32,7 +37,7 @@ const newDay = () => ({
   team: "IIIa",
 });
 
-/* ===== Aiškūs, taisyklingi pasiūlymai vietoj ekranų ===== */
+/* ===== Aiškūs pasiūlymai vietoj ekranų ===== */
 const IDEAS = [
   "Padaryk 100 žingsnių po klasę ar koridorių.",
   "Kvėpuok 4–7–8 metodu (3 kartus).",
@@ -62,6 +67,62 @@ function getChallengeByDate(dateStr) {
   const idx = n % CHALLENGES.length;
   return { ...CHALLENGES[idx], date: dateStr, done: false };
 }
+
+/* ====================== Dienos motyvacija ====================== */
+const MOTIVATIONS = [
+  "Maži žingsniai veda į didelius pokyčius.",
+  "Tu gali daugiau, negu dabar galvoji.",
+  "Svarbu ne tobulumas, o nuoseklumas.",
+  "Vienas geras įprotis gali pakeisti visą dieną.",
+  "Rūpindamasis savimi, parodai pagarbą sau ir kitiems.",
+  "Pradėk šiandien – rytojus padėkos.",
+  "Net maža pertrauka nuo ekranų yra pergalė.",
+  "Sveikas kūnas padeda ramiau jaustis ir galvoti.",
+  "Kiekviena stiklinė vandens – dovana tavo kūnui.",
+  "Judėjimas – pigiausias ir veiksmingiausias vaistas.",
+];
+function getMotivationForDate(dateStr) {
+  const n = parseInt(dateStr.replaceAll("-", ""), 10);
+  const idx = n % MOTIVATIONS.length;
+  return MOTIVATIONS[idx];
+}
+
+/* ====================== Pavyzdiniai receptai ir darbai ====================== */
+const RECIPE_EXAMPLES = [
+  {
+    title: "Spalvingos daržovių lazdelės su jogurto padažu",
+    tag: "Sveikas užkandis",
+    desc: "Morkos, agurkai, paprika, cukinija supjaustomi lazdelėmis. Padažas: natūralus jogurtas, česnakas, truputis druskos ir krapų.",
+  },
+  {
+    title: "Avižinė košė stiklainėlyje",
+    tag: "Pusryčiai",
+    desc: "Avižiniai dribsniai, pienas ar jogurtas, vaisiai, šaukštelis sėklų. Palikti per naktį šaldytuve.",
+  },
+  {
+    title: "Jogurtinis vaisių desertas be papildomo cukraus",
+    tag: "Desertas",
+    desc: "Natūralus jogurtas, bananai, uogos, šaukštelis riešutų ar sėklų. Sudėti sluoksniais į stiklinę.",
+  },
+];
+
+const CRAFT_EXAMPLES = [
+  {
+    title: "Darbai iš antrinių žaliavų",
+    tag: "Perdirbimas",
+    desc: "Iš dėžučių, butelių, popieriaus sukurkite pieštukines, žaislus, dekoracijas. Svarbu: saugiai naudoti žirkles ir klijus.",
+  },
+  {
+    title: "Sveikatos plakatas klasei",
+    tag: "Plakatas",
+    desc: "Sukurkite plakatą apie sveiką mitybą, judėjimą ar miegą. Naudokite spalvas, savo nuotraukas, aprašymus.",
+  },
+  {
+    title: "„Padėkos stiklainis“",
+    tag: "Emocijos",
+    desc: "Stiklainis, į kurį visi meta lapelius su tuo, už ką šiandien dėkingi. Galima dekoruoti sveikatos simboliais.",
+  },
+];
 
 /* ==== Failo -> DataURL su suspaudimu (iki 1400 px) ==== */
 async function fileToDataUrl(file, maxSize = 1400, quality = 0.85) {
@@ -159,7 +220,6 @@ export default function App() {
   const [goals, setGoals] = useLS("goals", defaultGoals);
   const [today, setToday] = useLS("today", newDay());
   const [notes, setNotes] = useLS("notes", "");
-
   const [leaders, setLeaders] = useLS("leaders", [
     { team: "IIIa", points: 0 },
     { team: "IIf", points: 0 },
@@ -168,7 +228,10 @@ export default function App() {
   const [history, setHistory] = useLS("history", {});
   const [badges, setBadges] = useLS("badges", []);
   const [streak, setStreak] = useLS("streak", 0);
-  const [challenge, setChallenge] = useLS("dailyChallenge", getChallengeByDate(todayStr()));
+  const [challenge, setChallenge] = useLS(
+    "dailyChallenge",
+    getChallengeByDate(todayStr())
+  );
   const [gallery, setGallery] = useLS("gallery", []);
 
   // nauja diena
@@ -186,10 +249,18 @@ export default function App() {
     setLeaders((list) => {
       const name = (today.team || "").trim();
       if (!name) return list;
-      const exists = list.some((x) => (x.team || "").toLowerCase() === name.toLowerCase());
+      const exists = list.some(
+        (x) => (x.team || "").toLowerCase() === name.toLowerCase()
+      );
       return exists ? list : [...list, { team: name, points: 0 }];
     });
   }, [today.team]);
+
+  // dienos motyvacija
+  const motivation = useMemo(
+    () => getMotivationForDate(today.date),
+    [today.date]
+  );
 
   // procentai
   const pct = useMemo(
@@ -275,7 +346,7 @@ export default function App() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-2xl font-extrabold tracking-tight">Sveikas įprotis</div>
-            <div className="text-xs text-gray-500">Prototipas • v0.4 • PWA</div>
+            <div className="text-xs text-gray-500">Prototipas • v0.5 • PWA</div>
           </div>
           <div className="text-right">
             <div className="text-sm font-semibold">{today.team}</div>
@@ -289,15 +360,33 @@ export default function App() {
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-xl py-2 text-sm ${tab === t ? "bg-brand-600 text-white" : "bg-white border hover:bg-sky-50"}`}
+              className={`rounded-xl py-2 text-sm ${
+                tab === t ? "bg-brand-600 text-white" : "bg-white border hover:bg-sky-50"
+              }`}
             >
               {["Pradžia", "Be ekranų", "Tikslai", "Lyderiai", "Ženkliukai", "Užrašai"][i]}
             </button>
           ))}
         </div>
 
+        {/* PRADŽIA */}
         {tab === "home" && (
           <div className="space-y-4">
+            {/* Dienos motyvacija */}
+            <div className="card border-brand-100 bg-gradient-to-r from-sky-50 to-white">
+              <div className="flex gap-3">
+                <div className="text-2xl">🌟</div>
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-brand-700">
+                    Dienos motyvacija
+                  </div>
+                  <div className="mt-1 text-sm font-medium text-gray-800">
+                    „{motivation}“
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Perspėjimas dėl ekranų */}
             {overScreen && (
               <div className="card border-brand-100">
@@ -309,7 +398,12 @@ export default function App() {
                       Pasiūlymas: <span className="font-medium">{idea}</span>
                     </div>
                     <div className="mt-2">
-                      <button className="btn-primary" onClick={() => setTab("focus")}>Eiti į „Be ekranų“</button>
+                      <button
+                        className="btn-primary"
+                        onClick={() => setTab("focus")}
+                      >
+                        Eiti į „Be ekranų“
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -329,13 +423,17 @@ export default function App() {
                       onClick={() => {
                         award(challenge.points, "Dienos iššūkis");
                         setChallenge((c) => ({ ...c, done: true }));
-                        alert(`Puiku! Įvykdei dienos iššūkį. +${challenge.points} tašk.`);
+                        alert(
+                          `Puiku! Įvykdei dienos iššūkį. +${challenge.points} tašk.`
+                        );
                       }}
                     >
                       Pažymėti įvykdytą (+{challenge.points} tšk.)
                     </button>
                   ) : (
-                    <div className="mt-2 text-sm text-brand-700">✔ Įvykdyta! Taškai jau pridėti.</div>
+                    <div className="mt-2 text-sm text-brand-700">
+                      ✔ Įvykdyta! Taškai jau pridėti.
+                    </div>
                   )}
                 </div>
               </div>
@@ -345,20 +443,70 @@ export default function App() {
             <div className="grid grid-cols-2 gap-3">
               <Stat label="Žingsniai šiandien" value={today.steps} pct={pct.steps} />
               <Stat label="Vanduo" value={today.waterMl} unit="ml" pct={pct.water} />
-              <Stat label="Ekrano laikas" value={today.screenMin} unit="min" pct={pct.screen} />
-              <Stat label="Miegas" value={today.sleepHours} unit="val." pct={pct.sleep} />
+              <Stat
+                label="Ekrano laikas"
+                value={today.screenMin}
+                unit="min"
+                pct={pct.screen}
+              />
+              <Stat
+                label="Miegas"
+                value={today.sleepHours}
+                unit="val."
+                pct={pct.sleep}
+              />
             </div>
 
             {/* Greiti veiksmai */}
             <div className="card">
               <H title="Greiti veiksmai" subtitle="Progresas ir taškai." />
               <div className="flex flex-wrap gap-2">
-                <button className="btn-primary" onClick={() => setToday((t) => ({ ...t, steps: t.steps + 500 }))}>+500 žingsnių</button>
-                <button className="btn-primary" onClick={() => setToday((t) => ({ ...t, steps: t.steps + 1000 }))}>+1000 žingsnių</button>
-                <button className="btn-ghost" onClick={() => setToday((t) => ({ ...t, waterMl: t.waterMl + 250 }))}>+250 ml</button>
-                <button className="btn-ghost" onClick={() => setToday((t) => ({ ...t, waterMl: t.waterMl + 500 }))}>+500 ml</button>
-                <button className="btn-ghost" onClick={() => setToday((t) => ({ ...t, screenMin: t.screenMin + 15 }))}>+15 min ekranui</button>
-                <button className="btn-ghost" onClick={() => award(1, "Rankinis +1 taškas")}>+1 taškas</button>
+                <button
+                  className="btn-primary"
+                  onClick={() =>
+                    setToday((t) => ({ ...t, steps: t.steps + 500 }))
+                  }
+                >
+                  +500 žingsnių
+                </button>
+                <button
+                  className="btn-primary"
+                  onClick={() =>
+                    setToday((t) => ({ ...t, steps: t.steps + 1000 }))
+                  }
+                >
+                  +1000 žingsnių
+                </button>
+                <button
+                  className="btn-ghost"
+                  onClick={() =>
+                    setToday((t) => ({ ...t, waterMl: t.waterMl + 250 }))
+                  }
+                >
+                  +250 ml
+                </button>
+                <button
+                  className="btn-ghost"
+                  onClick={() =>
+                    setToday((t) => ({ ...t, waterMl: t.waterMl + 500 }))
+                  }
+                >
+                  +500 ml
+                </button>
+                <button
+                  className="btn-ghost"
+                  onClick={() =>
+                    setToday((t) => ({ ...t, screenMin: t.screenMin + 15 }))
+                  }
+                >
+                  +15 min ekranui
+                </button>
+                <button
+                  className="btn-ghost"
+                  onClick={() => award(1, "Rankinis +1 taškas")}
+                >
+                  +1 taškas
+                </button>
               </div>
             </div>
 
@@ -372,37 +520,64 @@ export default function App() {
                   value={today.sleepHours}
                   min={0}
                   step={0.5}
-                  onChange={(e) => setToday((t) => ({ ...t, sleepHours: parseFloat(e.target.value || 0) }))}
+                  onChange={(e) =>
+                    setToday((t) => ({
+                      ...t,
+                      sleepHours: parseFloat(e.target.value || 0),
+                    }))
+                  }
                 />
                 <span className="text-sm text-gray-600">val.</span>
-                <div className="ml-auto text-xs text-gray-500">Streak: <b>{streak}</b> d.</div>
+                <div className="ml-auto text-xs text-gray-500">
+                  Streak: <b>{streak}</b> d.
+                </div>
               </div>
             </div>
 
             {/* Grafikas */}
             <div className="card">
-              <H title="Savaitės žingsniai" subtitle="Paskutinės 7 dienos" right={<Tag>{weekKeys.length} d.</Tag>} />
+              <H
+                title="Savaitės žingsniai"
+                subtitle="Paskutinės 7 dienos"
+                right={<Tag>{weekKeys.length} d.</Tag>}
+              />
               <Bars values={weekSteps} labels={weekKeys.map((k) => k.slice(5))} />
             </div>
 
             <div className="flex gap-2">
-              <button className="btn-primary" onClick={saveDay}>Išsaugoti dieną</button>
-              <button className="btn-ghost" onClick={() => setToday(newDay())}>Nauja diena</button>
+              <button className="btn-primary" onClick={saveDay}>
+                Išsaugoti dieną
+              </button>
+              <button className="btn-ghost" onClick={() => setToday(newDay())}>
+                Nauja diena
+              </button>
             </div>
           </div>
         )}
 
-        {tab === "focus" && <FocusTab today={today} setToday={setToday} award={award} />}
+        {/* BE EKRANŲ */}
+        {tab === "focus" && (
+          <FocusTab today={today} setToday={setToday} award={award} />
+        )}
 
+        {/* TIKSLAI */}
         {tab === "goals" && (
           <div className="space-y-4">
             <div className="card">
               <H title="Asmeniniai tikslai" subtitle="Keisk pagal poreikį." />
               {["steps", "waterMl", "screenLimitMin", "sleepHours"].map((k, i) => {
-                const labels = ["Žingsniai/d.", "Vanduo (ml)", "Ekranas (min/d.)", "Miegas (val.)"];
+                const labels = [
+                  "Žingsniai/d.",
+                  "Vanduo (ml)",
+                  "Ekranas (min/d.)",
+                  "Miegas (val.)",
+                ];
                 const step = i === 3 ? 0.5 : 1;
                 return (
-                  <label key={k} className="grid grid-cols-[150px,1fr] items-center gap-3 py-1">
+                  <label
+                    key={k}
+                    className="grid grid-cols-[150px,1fr] items-center gap-3 py-1"
+                  >
                     <span className="text-sm text-gray-700">{labels[i]}</span>
                     <input
                       type="number"
@@ -410,7 +585,13 @@ export default function App() {
                       className="rounded-xl border px-3 py-2"
                       value={goals[k]}
                       onChange={(e) =>
-                        setGoals((g) => ({ ...g, [k]: i === 3 ? parseFloat(e.target.value || 0) : parseInt(e.target.value || 0) }))
+                        setGoals((g) => ({
+                          ...g,
+                          [k]:
+                            i === 3
+                              ? parseFloat(e.target.value || 0)
+                              : parseInt(e.target.value || 0),
+                        }))
                       }
                     />
                   </label>
@@ -421,23 +602,32 @@ export default function App() {
             <div className="card">
               <H title="Komanda" />
               <div className="grid grid-cols-2 gap-3 items-center">
-                <span className="text-sm text-gray-700">Mano komanda / klasė</span>
+                <span className="text-sm text-gray-700">
+                  Mano komanda / klasė
+                </span>
                 <input
                   className="rounded-xl border px-3 py-2"
                   value={today.team}
-                  onChange={(e) => setToday((t) => ({ ...t, team: e.target.value }))}
+                  onChange={(e) =>
+                    setToday((t) => ({ ...t, team: e.target.value }))
+                  }
                 />
               </div>
             </div>
           </div>
         )}
 
+        {/* LYDERIAI */}
         {tab === "leaders" && (
           <div className="space-y-3">
             <div className="card">
               <H title="Lyderių lentelė" subtitle="Šiame įrenginyje" />
               <div className="flex gap-2 mb-2">
-                <input id="newTeam" placeholder="Nauja komanda (pvz., IIIc)" className="rounded-xl border px-3 py-2 flex-1" />
+                <input
+                  id="newTeam"
+                  placeholder="Nauja komanda (pvz., IIIc)"
+                  className="rounded-xl border px-3 py-2 flex-1"
+                />
                 <button
                   className="btn-ghost"
                   onClick={() => {
@@ -445,7 +635,10 @@ export default function App() {
                     const name = (el.value || "").trim();
                     if (!name) return;
                     setLeaders((a) =>
-                      a.some((x) => (x.team || "").toLowerCase() === name.toLowerCase())
+                      a.some(
+                        (x) =>
+                          (x.team || "").toLowerCase() === name.toLowerCase()
+                      )
                         ? a
                         : [...a, { team: name, points: 0 }]
                     );
@@ -459,8 +652,13 @@ export default function App() {
                 .filter((l) => (l.team || "").trim() !== "")
                 .sort((a, b) => b.points - a.points)
                 .map((l, i) => (
-                  <div key={l.team + i} className="flex items-center justify-between py-2 border-b last:border-0">
-                    <div className="font-medium">{i + 1}. {l.team}</div>
+                  <div
+                    key={l.team + i}
+                    className="flex items-center justify-between py-2 border-b last:border-0"
+                  >
+                    <div className="font-medium">
+                      {i + 1}. {l.team}
+                    </div>
                     <div className="text-sm">{l.points} taškai</div>
                   </div>
                 ))}
@@ -468,23 +666,37 @@ export default function App() {
           </div>
         )}
 
+        {/* ŽENKLIUKAI */}
         {tab === "badges" && (
           <div className="card">
-            <H title="Ženkliukai" subtitle="Motyvaciniai pasiekimai" right={<Tag>{badges.length}</Tag>} />
+            <H
+              title="Ženkliukai"
+              subtitle="Motyvaciniai pasiekimai"
+              right={<Tag>{badges.length}</Tag>}
+            />
             {badges.length ? (
               <div className="grid grid-cols-2 gap-2">
                 {badges.map((b, i) => (
-                  <div key={i} className="rounded-2xl border p-3 bg-white text-sm">🏅 {b}</div>
+                  <div
+                    key={i}
+                    className="rounded-2xl border p-3 bg-white text-sm"
+                  >
+                    🏅 {b}
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="text-sm text-gray-500">Kol kas nėra – pasiek tikslus ir gauk!</div>
+              <div className="text-sm text-gray-500">
+                Kol kas nėra – pasiek tikslus ir gauk!
+              </div>
             )}
           </div>
         )}
 
+        {/* UŽRAŠAI + GALERIJA + PAVYZDŽIAI */}
         {tab === "notes" && (
           <div className="space-y-4">
+            {/* Paprasti užrašai */}
             <div className="card">
               <H title="Užrašai / planas" subtitle="Automatiškai išsaugoma" />
               <textarea
@@ -493,11 +705,18 @@ export default function App() {
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Idėjos, planas, sąrašai..."
               />
-              <div className="text-xs text-gray-500 mt-1 text-right">{notes.length} simbolių</div>
+              <div className="text-xs text-gray-500 mt-1 text-right">
+                {notes.length} simbolių
+              </div>
             </div>
 
+            {/* Galerija su mokinių darbais ir receptais */}
             <div className="card">
-              <H title="Galerija: receptai, darbai, idėjos" subtitle="Įkelk nuotrauką ir aprašą — duomenys saugomi tik šiame įrenginyje." right={<span className='pill'>{gallery.length}</span>} />
+              <H
+                title="Galerija: jūsų receptai ir darbai"
+                subtitle="Įkelk nuotrauką ir aprašą — duomenys saugomi tik šiame įrenginyje."
+                right={<span className="pill">{gallery.length}</span>}
+              />
 
               <UploadForm
                 onAdd={async (file, caption, tag) => {
@@ -508,22 +727,33 @@ export default function App() {
                     img: dataUrl,
                     caption: caption?.trim() || "",
                     tag: tag || "Kita",
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
                   };
                   setGallery((g) => [item, ...g]);
                 }}
               />
 
               {gallery.length === 0 ? (
-                <div className="text-sm text-gray-500">Kol kas tuščia. Įkelk pirmą nuotrauką!</div>
+                <div className="text-sm text-gray-500 mt-2">
+                  Kol kas tuščia. Įkelk pirmą nuotrauką – gali būti receptas, darbelis,
+                  plakatas ar kita sveikatos idėja.
+                </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                   {gallery.map((it) => (
                     <GalleryCard
                       key={it.id}
                       item={it}
-                      onDelete={() => setGallery((g) => g.filter((x) => x.id !== it.id))}
-                      onUpdate={(patch) => setGallery((g) => g.map((x) => (x.id === it.id ? { ...x, ...patch } : x)))}
+                      onDelete={() =>
+                        setGallery((g) => g.filter((x) => x.id !== it.id))
+                      }
+                      onUpdate={(patch) =>
+                        setGallery((g) =>
+                          g.map((x) =>
+                            x.id === it.id ? { ...x, ...patch } : x
+                          )
+                        )
+                      }
                     />
                   ))}
                 </div>
@@ -533,7 +763,10 @@ export default function App() {
                 <button
                   className="btn-ghost"
                   onClick={() => {
-                    const blob = new Blob([JSON.stringify(gallery, null, 2)], { type: "application/json" });
+                    const blob = new Blob(
+                      [JSON.stringify(gallery, null, 2)],
+                      { type: "application/json" }
+                    );
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
@@ -566,16 +799,69 @@ export default function App() {
                   />
                 </label>
               </div>
+            </div>
 
-              <div className="text-xs text-gray-500 mt-3">
-                Patarimas: vaizdai saugomi kaip suspausti „data URL“. Jei galerija labai išaugs, periodiškai eksportuok ir tvarkyk įrašus.
+            {/* Idėjų bankas: pavyzdiniai receptai */}
+            <div className="card">
+              <H
+                title="Idėjų bankas: receptai"
+                subtitle="Pavyzdžiai, kuriuos galima išbandyti arba adaptuoti."
+              />
+              <div className="grid gap-2 text-sm">
+                {RECIPE_EXAMPLES.map((r, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl border p-3 bg-white flex flex-col gap-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">{r.title}</div>
+                      <span className="pill">{r.tag}</span>
+                    </div>
+                    <div className="text-gray-700">{r.desc}</div>
+                    <button
+                      className="btn-ghost mt-1 text-xs"
+                      onClick={() => award(1, "Išbandytas recepto pavyzdys")}
+                    >
+                      Pažymėti kaip išbandytą (+1 tšk.)
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Idėjų bankas: darbai */}
+            <div className="card">
+              <H
+                title="Idėjų bankas: darbai ir kūryba"
+                subtitle="Pavyzdžiai klasės veikloms ir kūrybai."
+              />
+              <div className="grid gap-2 text-sm">
+                {CRAFT_EXAMPLES.map((c, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl border p-3 bg-white flex flex-col gap-1"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">{c.title}</div>
+                      <span className="pill">{c.tag}</span>
+                    </div>
+                    <div className="text-gray-700">{c.desc}</div>
+                    <button
+                      className="btn-ghost mt-1 text-xs"
+                      onClick={() => award(1, "Išbandytas darbelio pavyzdys")}
+                    >
+                      Pažymėti kaip išbandytą (+1 tšk.)
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         )}
 
         <footer className="text-center text-xs text-gray-500 mt-6">
-          Duomenys saugomi tik šiame įrenginyje (localStorage). 🧠 PWA: pridėk prie pagrindinio ekrano.
+          Duomenys saugomi tik šiame įrenginyje (localStorage). 🧠 PWA: pridėk prie
+          pagrindinio ekrano.
         </footer>
       </div>
     </div>
@@ -609,7 +895,13 @@ function FocusTab({ today, setToday, award }) {
     const minutes = Math.max(1, Math.floor((Date.now() - start) / 60000));
     const gained = Math.floor(minutes / 10);
     if (gained > 0) award(gained, "Laikas be ekranų");
-    setToday((t) => ({ ...t, focusSessions: [...t.focusSessions, { start: new Date().toISOString(), minutes }] }));
+    setToday((t) => ({
+      ...t,
+      focusSessions: [
+        ...t.focusSessions,
+        { start: new Date().toISOString(), minutes },
+      ],
+    }));
     alert(`Puiku! Be ekranų: ${minutes} min. Gavai +${gained} tašk.`);
   };
 
@@ -617,10 +909,19 @@ function FocusTab({ today, setToday, award }) {
     <div className="space-y-4">
       <div className="card text-center">
         <H title="Laikas be ekranų" subtitle="+1 taškas kas 10 min." />
-        <div className="text-5xl font-extrabold">{running ? `${elapsed} min` : "0 min"}</div>
+        <div className="text-5xl font-extrabold">
+          {running ? `${elapsed} min` : "0 min"}
+        </div>
         <div className="mt-3 flex justify-center gap-2">
-          {!running ? <button className="btn-primary" onClick={startTimer}>Pradėti</button>
-                     : <button className="btn-primary" onClick={finish}>Baigti</button>}
+          {!running ? (
+            <button className="btn-primary" onClick={startTimer}>
+              Pradėti
+            </button>
+          ) : (
+            <button className="btn-primary" onClick={finish}>
+              Baigti
+            </button>
+          )}
         </div>
       </div>
 
@@ -628,7 +929,9 @@ function FocusTab({ today, setToday, award }) {
         <H title="Idėjos vietoj ekranų" />
         <div className="grid gap-2 text-sm">
           {IDEAS.map((x, i) => (
-            <div key={i} className="rounded-xl border p-3 bg-white">• {x}</div>
+            <div key={i} className="rounded-xl border p-3 bg-white">
+              • {x}
+            </div>
           ))}
         </div>
       </div>
@@ -658,7 +961,13 @@ function UploadForm({ onAdd }) {
               setPreview(f ? URL.createObjectURL(f) : "");
             }}
           />
-          {preview && <img src={preview} alt="peržiūra" className="mt-2 h-28 w-auto rounded-xl object-cover" />}
+          {preview && (
+            <img
+              src={preview}
+              alt="peržiūra"
+              className="mt-2 h-28 w-auto rounded-xl object-cover"
+            />
+          )}
         </label>
 
         <div className="grid gap-2">
@@ -695,7 +1004,10 @@ function UploadForm({ onAdd }) {
                   return;
                 }
                 await onAdd(file, caption, tag);
-                setFile(null); setCaption(""); setTag("Receptas"); setPreview("");
+                setFile(null);
+                setCaption("");
+                setTag("Receptas");
+                setPreview("");
               }}
             >
               Įkelti
@@ -709,17 +1021,31 @@ function UploadForm({ onAdd }) {
 
 function GalleryCard({ item, onDelete, onUpdate }) {
   const d = new Date(item.createdAt);
-  const date = d.toLocaleDateString("lt-LT") + " " + d.toLocaleTimeString("lt-LT", { hour: "2-digit", minute: "2-digit" });
+  const date =
+    d.toLocaleDateString("lt-LT") +
+    " " +
+    d.toLocaleTimeString("lt-LT", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <div className="rounded-2xl border p-3 bg-white">
-      <img src={item.img} alt={item.caption || "įrašas"} className="h-40 w-full object-cover rounded-xl" />
+      <img
+        src={item.img}
+        alt={item.caption || "įrašas"}
+        className="h-40 w-full object-cover rounded-xl"
+      />
       <div className="mt-2 text-xs text-gray-500">{date}</div>
       <div className="mt-1 flex items-center justify-between">
         <span className="pill">{item.tag}</span>
         <div className="flex gap-2">
-          <a className="btn-ghost text-xs" href={item.img} download>Atsisiųsti</a>
-          <button className="btn-ghost text-xs" onClick={onDelete}>Ištrinti</button>
+          <a className="btn-ghost text-xs" href={item.img} download>
+            Atsisiųsti
+          </a>
+          <button className="btn-ghost text-xs" onClick={onDelete}>
+            Ištrinti
+          </button>
         </div>
       </div>
       <input
@@ -731,4 +1057,3 @@ function GalleryCard({ item, onDelete, onUpdate }) {
     </div>
   );
 }
-
