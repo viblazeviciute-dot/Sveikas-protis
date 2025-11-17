@@ -99,19 +99,19 @@ const RECIPE_EXAMPLES = [
     title: "Spalvingos daržovių lazdelės su jogurto padažu",
     tag: "Sveikas užkandis",
     desc: "Morkos, agurkai, paprika, cukinija supjaustomi lazdelėmis. Padažas: natūralus jogurtas, česnakas, truputis druskos ir krapų.",
-    img: "",
+    img: "https://images.delfi.lt/media-api-image-cropper/v1/d51d07b0-7b90-11ed-a628-f15cb6709fa2.jpg?w=1200&h=800&fx=0.5&fy=0.25",
   },
   {
     title: "Avižinė košė stiklainėlyje",
     tag: "Pusryčiai",
     desc: "Avižiniai dribsniai, pienas ar jogurtas, vaisiai, šaukštelis sėklų. Palikti per naktį šaldytuve.",
-    img: "",
+    img: "https://www.sauletavirtuve.lt/wp-content/uploads/Brinkinta-avizine-kose-su-silauogemis-1.jpg",
   },
   {
     title: "Jogurtinis vaisių desertas be papildomo cukraus",
     tag: "Desertas",
     desc: "Natūralus jogurtas, bananai, uogos, šaukštelis riešutų ar sėklų. Sudėti sluoksniais į stiklinę.",
-    img: "",
+    img: "https://cust.lt/wp-content/uploads/2024/10/delicious_coconut_yogurt_parfait.jpg",
   },
 ];
 
