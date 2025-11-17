@@ -87,22 +87,31 @@ function getMotivationForDate(dateStr) {
   return MOTIVATIONS[idx];
 }
 
-/* ====================== Pavyzdiniai receptai ir darbai ====================== */
+/* ====================== Pavyzdiniai receptai ir darbai (su nuotraukos vieta) ====================== */
+/* 
+  Pastaba: šiuo metu img yra tuščias stringas.
+  Jei norėsi tikrų nuotraukų, gali įrašyti, pvz.:
+  img: "https://.../mano-fotke.jpg"
+  arba įkelti paveikslėlius į /public/img ir naudoti "/img/pavadinimas.jpg".
+*/
 const RECIPE_EXAMPLES = [
   {
     title: "Spalvingos daržovių lazdelės su jogurto padažu",
     tag: "Sveikas užkandis",
     desc: "Morkos, agurkai, paprika, cukinija supjaustomi lazdelėmis. Padažas: natūralus jogurtas, česnakas, truputis druskos ir krapų.",
+    img: "",
   },
   {
     title: "Avižinė košė stiklainėlyje",
     tag: "Pusryčiai",
     desc: "Avižiniai dribsniai, pienas ar jogurtas, vaisiai, šaukštelis sėklų. Palikti per naktį šaldytuve.",
+    img: "",
   },
   {
     title: "Jogurtinis vaisių desertas be papildomo cukraus",
     tag: "Desertas",
     desc: "Natūralus jogurtas, bananai, uogos, šaukštelis riešutų ar sėklų. Sudėti sluoksniais į stiklinę.",
+    img: "",
   },
 ];
 
@@ -111,16 +120,19 @@ const CRAFT_EXAMPLES = [
     title: "Darbai iš antrinių žaliavų",
     tag: "Perdirbimas",
     desc: "Iš dėžučių, butelių, popieriaus sukurkite pieštukines, žaislus, dekoracijas. Svarbu: saugiai naudoti žirkles ir klijus.",
+    img: "",
   },
   {
     title: "Sveikatos plakatas klasei",
     tag: "Plakatas",
     desc: "Sukurkite plakatą apie sveiką mitybą, judėjimą ar miegą. Naudokite spalvas, savo nuotraukas, aprašymus.",
+    img: "",
   },
   {
     title: "„Padėkos stiklainis“",
     tag: "Emocijos",
     desc: "Stiklainis, į kurį visi meta lapelius su tuo, už ką šiandien dėkingi. Galima dekoruoti sveikatos simboliais.",
+    img: "",
   },
 ];
 
@@ -217,6 +229,7 @@ function Bars({ values, max = 1, labels = [] }) {
 /* ====================== Pagrindinė aplikacija ====================== */
 export default function App() {
   const [tab, setTab] = useState("home");
+  const [ideaFilter, setIdeaFilter] = useState("receptai"); // nauja skilties būsena
   const [goals, setGoals] = useLS("goals", defaultGoals);
   const [today, setToday] = useLS("today", newDay());
   const [notes, setNotes] = useLS("notes", "");
@@ -354,19 +367,21 @@ export default function App() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs – PRIDĖTA „ideas“ skiltis */}
         <div className="grid grid-cols-3 gap-2 mb-4">
-          {["home", "focus", "goals", "leaders", "badges", "notes"].map((t, i) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`rounded-xl py-2 text-sm ${
-                tab === t ? "bg-brand-600 text-white" : "bg-white border hover:bg-sky-50"
-              }`}
-            >
-              {["Pradžia", "Be ekranų", "Tikslai", "Lyderiai", "Ženkliukai", "Užrašai"][i]}
-            </button>
-          ))}
+          {["home", "focus", "goals", "leaders", "ideas", "badges", "notes"].map(
+            (t, i) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`rounded-xl py-2 text-xs ${
+                  tab === t ? "bg-brand-600 text-white" : "bg-white border hover:bg-sky-50"
+                }`}
+              >
+                {["Pradžia", "Be ekranų", "Tikslai", "Lyderiai", "Idėjos", "Ženkliukai", "Užrašai"][i]}
+              </button>
+            )
+          )}
         </div>
 
         {/* PRADŽIA */}
@@ -666,6 +681,93 @@ export default function App() {
           </div>
         )}
 
+        {/* IDĖJOS – nauja atskira skiltis su pasirinkimais ir (galimomis) nuotraukomis */}
+        {tab === "ideas" && (
+          <div className="space-y-4">
+            <div className="card">
+              <H
+                title="Idėjų bankas"
+                subtitle="Pasirink, ką šiandien norėtum pažiūrėti ar išbandyti."
+              />
+              <div className="flex gap-2 mb-2 flex-wrap">
+                <button
+                  onClick={() => setIdeaFilter("receptai")}
+                  className={`px-3 py-1 rounded-xl text-xs ${
+                    ideaFilter === "receptai"
+                      ? "bg-brand-600 text-white"
+                      : "bg-white border"
+                  }`}
+                >
+                  🍽️ Receptai
+                </button>
+                <button
+                  onClick={() => setIdeaFilter("darbai")}
+                  className={`px-3 py-1 rounded-xl text-xs ${
+                    ideaFilter === "darbai"
+                      ? "bg-brand-600 text-white"
+                      : "bg-white border"
+                  }`}
+                >
+                  🎨 Darbai ir kūryba
+                </button>
+                <button
+                  onClick={() => setIdeaFilter("veiklos")}
+                  className={`px-3 py-1 rounded-xl text-xs ${
+                    ideaFilter === "veiklos"
+                      ? "bg-brand-600 text-white"
+                      : "bg-white border"
+                  }`}
+                >
+                  ⚡ Greitos veiklos
+                </button>
+              </div>
+
+              {ideaFilter === "receptai" && (
+                <div className="grid gap-3">
+                  {RECIPE_EXAMPLES.map((r, i) => (
+                    <ExampleCard
+                      key={i}
+                      item={r}
+                      onTry={() => award(1, "Išbandytas recepto pavyzdys")}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {ideaFilter === "darbai" && (
+                <div className="grid gap-3">
+                  {CRAFT_EXAMPLES.map((c, i) => (
+                    <ExampleCard
+                      key={i}
+                      item={c}
+                      onTry={() => award(1, "Išbandytas darbelio pavyzdys")}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {ideaFilter === "veiklos" && (
+                <div className="grid gap-2 text-sm mt-2">
+                  {IDEAS.map((x, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl border p-3 bg-white flex justify-between items-center gap-2"
+                    >
+                      <span>• {x}</span>
+                      <button
+                        className="btn-ghost text-xs"
+                        onClick={() => award(1, "Išbandyta greita veikla")}
+                      >
+                        +1 tšk.
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ŽENKLIUKAI */}
         {tab === "badges" && (
           <div className="card">
@@ -693,10 +795,9 @@ export default function App() {
           </div>
         )}
 
-        {/* UŽRAŠAI + GALERIJA + PAVYZDŽIAI */}
+        {/* UŽRAŠAI + GALERIJA (mokinių sukelti darbai) */}
         {tab === "notes" && (
           <div className="space-y-4">
-            {/* Paprasti užrašai */}
             <div className="card">
               <H title="Užrašai / planas" subtitle="Automatiškai išsaugoma" />
               <textarea
@@ -710,7 +811,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* Galerija su mokinių darbais ir receptais */}
             <div className="card">
               <H
                 title="Galerija: jūsų receptai ir darbai"
@@ -758,103 +858,6 @@ export default function App() {
                   ))}
                 </div>
               )}
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  className="btn-ghost"
-                  onClick={() => {
-                    const blob = new Blob(
-                      [JSON.stringify(gallery, null, 2)],
-                      { type: "application/json" }
-                    );
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = "galerija_backup.json";
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                >
-                  Eksportuoti JSON
-                </button>
-                <label className="btn-ghost cursor-pointer">
-                  Importuoti JSON
-                  <input
-                    type="file"
-                    accept="application/json"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const f = e.target.files?.[0];
-                      if (!f) return;
-                      const text = await f.text();
-                      try {
-                        const data = JSON.parse(text);
-                        if (Array.isArray(data)) setGallery(data);
-                        else alert("Failo formatas neatpažintas.");
-                      } catch {
-                        alert("Nepavyko perskaityti failo.");
-                      }
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
-              </div>
-            </div>
-
-            {/* Idėjų bankas: pavyzdiniai receptai */}
-            <div className="card">
-              <H
-                title="Idėjų bankas: receptai"
-                subtitle="Pavyzdžiai, kuriuos galima išbandyti arba adaptuoti."
-              />
-              <div className="grid gap-2 text-sm">
-                {RECIPE_EXAMPLES.map((r, i) => (
-                  <div
-                    key={i}
-                    className="rounded-2xl border p-3 bg-white flex flex-col gap-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">{r.title}</div>
-                      <span className="pill">{r.tag}</span>
-                    </div>
-                    <div className="text-gray-700">{r.desc}</div>
-                    <button
-                      className="btn-ghost mt-1 text-xs"
-                      onClick={() => award(1, "Išbandytas recepto pavyzdys")}
-                    >
-                      Pažymėti kaip išbandytą (+1 tšk.)
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Idėjų bankas: darbai */}
-            <div className="card">
-              <H
-                title="Idėjų bankas: darbai ir kūryba"
-                subtitle="Pavyzdžiai klasės veikloms ir kūrybai."
-              />
-              <div className="grid gap-2 text-sm">
-                {CRAFT_EXAMPLES.map((c, i) => (
-                  <div
-                    key={i}
-                    className="rounded-2xl border p-3 bg-white flex flex-col gap-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">{c.title}</div>
-                      <span className="pill">{c.tag}</span>
-                    </div>
-                    <div className="text-gray-700">{c.desc}</div>
-                    <button
-                      className="btn-ghost mt-1 text-xs"
-                      onClick={() => award(1, "Išbandytas darbelio pavyzdys")}
-                    >
-                      Pažymėti kaip išbandytą (+1 tšk.)
-                    </button>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         )}
@@ -1054,6 +1057,33 @@ function GalleryCard({ item, onDelete, onUpdate }) {
         onChange={(e) => onUpdate({ caption: e.target.value })}
         placeholder="Aprašas…"
       />
+    </div>
+  );
+}
+
+/* ====================== Pavyzdžių kortelė su nuotrauka ====================== */
+function ExampleCard({ item, onTry }) {
+  return (
+    <div className="rounded-2xl border p-3 bg-white flex flex-col gap-2">
+      {item.img ? (
+        <img
+          src={item.img}
+          alt={item.title}
+          className="h-32 w-full object-cover rounded-xl"
+        />
+      ) : (
+        <div className="h-32 w-full rounded-xl bg-gradient-to-r from-sky-100 to-brand-50 flex items-center justify-center text-xs text-gray-500">
+          Nuotrauka gali būti pridėta vėliau
+        </div>
+      )}
+      <div className="flex items-center justify-between">
+        <div className="font-medium text-sm">{item.title}</div>
+        <span className="pill text-[10px]">{item.tag}</span>
+      </div>
+      <div className="text-xs text-gray-700">{item.desc}</div>
+      <button className="btn-ghost text-xs self-start mt-1" onClick={onTry}>
+        Pažymėti kaip išbandytą (+1 tšk.)
+      </button>
     </div>
   );
 }
